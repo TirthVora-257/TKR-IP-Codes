@@ -8,10 +8,6 @@ colour segmentation, and serial commands from a controller to:
 2. classify red objects in a 3-column, 4-row arena section; and
 3. select the robot's next grid position while avoiding symbol/fake targets.
 
-> [!IMPORTANT]
-> The repository contains prototype code, not a plug-and-play release. Review
-> the [current implementation notes](#current-implementation-notes) before
-> connecting it to robot hardware.
 
 ## System overview
 
@@ -170,29 +166,3 @@ Send only the command character. If the controller terminates messages with
 - `pos_is_false(...)` keeps the selected fallback position and changes the
   column used by the next detection cycle.
 
-## Current implementation notes
-
-The source files pass Python syntax compilation, but `main.py` has several
-runtime and integration issues that should be addressed before a full hardware
-test:
-
-- `COMx` is a placeholder and prevents the serial connection from opening until
-  replaced.
-- The program starts with `z1 = True` and `z2 = False`, but no implemented state
-  transition changes from zone 1 to zone 2.
-- The zone-1 detection loop refers to `cls_id` and `frame` before they are
-  defined, and it reads a zone-1 class name from `model_zone2` instead of
-  `model_zone1`.
-- Camera `read()` success flags are not checked before accessing frame data.
-- `readline().decode()` does not strip line endings, so newline-terminated
-  commands may not match `f`, `c`, or `n`.
-- The first-row route remains position `0` when no `R2Real` object is detected.
-- The HSV contour areas and `process_zone1` flag are calculated but not yet used
-  to control the state machine.
-- Cleanup omits `sph.release()`, and `right.release` is referenced without
-  calling it.
-- The `q` exit check is inside the zone-2 block, so it is unavailable while only
-  zone 1 is active.
-
-These notes describe the repository as it currently exists; they are not
-hardware calibration values or a guarantee of safe autonomous operation.
